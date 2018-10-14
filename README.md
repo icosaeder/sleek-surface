@@ -1,4 +1,4 @@
-# sleeksurf
+# sleek-surface
 Sleek surface building without misplaced extremes based on the finite discrete point set.
 
 It is an implementation of an algorithm described in <URL>
