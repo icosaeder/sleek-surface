@@ -37,6 +37,7 @@ namespace SleekSurface
 {
     using namespace std;
 
+    class Vec3;
     /**
      * The Math static class provides handy operations and constants.
      */
@@ -130,6 +131,13 @@ namespace SleekSurface
          * @param kernel - array to store the kernel.
          */
         static void calcGaussianKernel(int radius, bool shouldNormalize, vector<float> &kernel);
+        /**
+         * Calculate plane normal for given unequal 3 points.
+         * 
+         * @param a, b, c - vertices on plane
+         * @return normal to plane for given points
+         */
+        static Vec3 normal(const Vec3 &a, const Vec3 &b, const Vec3 &c);
     };
 
     /**
@@ -159,7 +167,7 @@ namespace SleekSurface
          * Add other vector to the current one.
          *
          * @param v - vector to add.
-         * @return summ of the current vector and the given one.
+         * @return sum of the current vector and the given one.
          */
         Vec2 operator +(const Vec2 &v) const { return Vec2(x + v.x, y + v.y); };
         /**
@@ -239,9 +247,9 @@ namespace SleekSurface
          * Add other vector to the current one.
          *
          * @param v - vector to add.
-         * @return summ of the current vector and the given one.
+         * @return sum of the current vector and the given one.
          */
-        Vec3 operator +(const Vec3 &v) const { return Vec3(x + v.x, y + v.y, y + v.z); };
+        Vec3 operator +(const Vec3 &v) const { return Vec3(x + v.x, y + v.y, z + v.z); };
         /**
          * Subtract other vector from the current one.
          *
@@ -272,6 +280,23 @@ namespace SleekSurface
                 z /= l;
             }
         };
+
+        /**
+         * Cross product of two vectors.
+         * 
+         * @param v1 - left vector in product.
+         * @param v2 - right vector in product.
+         * @return cross product of given vectors.
+         */
+        static Vec3 cross(const Vec3 &v1, const Vec3 &v2)
+        {
+            return Vec3
+            {
+                v1.y * v2.z - v1.z * v2.y,
+                v1.z * v2.x - v1.x * v2.z,
+                v1.x * v2.y - v1.y * v2.x
+            };
+        }
     };
 
     /**

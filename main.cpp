@@ -31,8 +31,9 @@
 using namespace SleekSurface;
 using namespace std;
 
-void printPLY(const vector<Vertex> &vertices)
+void printPLY(const vector<Vertex> &vertices, const vector<int> &indices)
 {
+    const int verticesInTriangle = 3;
     cout << "ply" << endl;
     cout << "format ascii 1.0" << endl;
     cout << "comment Created by sleek surface builder" << endl;
@@ -40,13 +41,21 @@ void printPLY(const vector<Vertex> &vertices)
     cout << "property float x" << endl;
     cout << "property float y" << endl;
     cout << "property float z" << endl;
-    cout << "element face 0" << endl;
+    cout << "property float nx" << endl;
+    cout << "property float ny" << endl;
+    cout << "property float nz" << endl;
+    cout << "element face " << indices.size() / verticesInTriangle << endl;
     cout << "property list uchar uint vertex_indices" << endl;
     cout << "end_header" << endl;
     for (int i = 0, n = vertices.size(); i < n; ++i)
     {
         // Swap axes to view in Blender.
-        cout << vertices[i].position.z << " " << vertices[i].position.x << " " << vertices[i].position.y << endl;
+        cout << vertices[i].position.z << " " << vertices[i].position.x << " " << vertices[i].position.y << " "
+             << vertices[i].normal.z   << " " << vertices[i].normal.x   << " " << vertices[i].normal.y << endl;
+    }
+    for (int i = 0, n = indices.size(); i < n; i += verticesInTriangle)
+    {
+        cout << verticesInTriangle << " " << indices[i] << " " << indices[i+1] << " " << indices[i+2] << endl;
     }
 }
 
@@ -76,7 +85,16 @@ int main(int argc, char **argv)
 
     SurfaceBuilder::build(points, w, h, 17, 2.0, vertices, rw, rh);
 
-    printPLY(vertices);
+    vector<int> indices;
+    SurfaceBuilder::triangulateGrid(rw, rh, indices);
+    SurfaceBuilder::computeNormals(vertices, indices);
+    vector<float> gaussianKernel;
+    int kernelRadius = 17 / 5;
+    Math::calcGaussianKernel(kernelRadius, false, gaussianKernel);
+    vector<Vertex> smoothedVertices = vertices;
+    SurfaceBuilder::smoothNormalsWithKernel(vertices, rw, rh, gaussianKernel, kernelRadius, smoothedVertices);
+
+    printPLY(smoothedVertices, indices);
 
     return 0;
 }

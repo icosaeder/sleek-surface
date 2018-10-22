@@ -69,6 +69,84 @@ bool SurfaceBuilder::getColSegments(vector<Vec3> &inPoints, int inWidth, int inH
     return true;
 }
 
+void SurfaceBuilder::triangulateGrid(int width, int height, vector<int> &indices)
+{
+    int n = (width - 1) * (height - 1) * 6;
+    indices.resize(n);
+    int i = 0;
+    for (int z = 0; z < height - 1; ++z)
+    {
+        for (int x = 0; x < width - 1; ++x)
+        {
+            // TL --- TR
+            //  |  __/ |
+            //  | /    |
+            // BL --- BR
+            int tl = index(width, x, z);
+            int tr = index(width, x + 1, z);
+            int bl = index(width, x, z + 1);
+            int br = index(width, x + 1, z + 1);
+            // First triangle
+            indices[i++] = tr;
+            indices[i++] = tl;
+            indices[i++] = bl;
+            // Second triangle
+            indices[i++] = bl;
+            indices[i++] = br;
+            indices[i++] = tr;
+        }
+    }
+}
+
+void SurfaceBuilder::computeNormals(vector<Vertex> &vertices, const vector<int> &indices)
+{
+    for (int i = 0, n = indices.size(); i < n; i += 3)
+    {
+        int n0 = indices[i];
+        int n1 = indices[i + 1];
+        int n2 = indices[i + 2];
+        Vertex v0 = vertices[n0];
+        Vertex v1 = vertices[n1];
+        Vertex v2 = vertices[n2];
+        Vec3 normal = Math::normal(v0.position, v1.position, v2.position);
+        v0.normal = v0.normal + normal;
+        v1.normal = v1.normal + normal;
+        v2.normal = v2.normal + normal;
+        v0.normal.normalize();
+        v1.normal.normalize();
+        v2.normal.normalize();
+        vertices[n0] = v0;
+        vertices[n1] = v1;
+        vertices[n2] = v2;
+    }
+}
+
+void SurfaceBuilder::smoothNormalsWithKernel(const vector<Vertex> &inVertices, int width, int height, vector<float> kernel, int radius, vector<Vertex> &outVertices)
+{
+    int n = radius * 2 + 1;
+    outVertices = inVertices;
+    for (int z = 0; z < height; ++z)
+    {
+        for (int x = 0; x < width; ++x)
+        {
+            Vec3 normal;
+            for (int i = -radius; i < radius; ++i)
+            {
+                for (int j = -radius; j < radius; ++j)
+                {
+                    int ind = gridIndex(width, height, x + j, z + i);
+                    if (ind > -1)
+                    {
+                        normal = normal + inVertices[ind].normal * (double)kernel[index(n, j + radius, i + radius)];
+                    }
+                }
+            }
+            normal.normalize();
+            outVertices[index(width, x, z)].normal = normal;
+        }
+    }
+}
+
 bool SurfaceBuilder::build(vector<Vec3> &inPoints, int inWidth, int inHeight, int resolution, double c,
                            vector<Vertex> &outPoints, int &outWidth, int &outHeight)
 {
