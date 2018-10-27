@@ -31,31 +31,33 @@
 using namespace SleekSurface;
 using namespace std;
 
-void printPLY(const vector<Vertex> &vertices, const vector<int> &indices)
+void printOBJ(const vector<Vertex> &vertices, const vector<int> &indices)
 {
-    const int verticesInTriangle = 3;
-    cout << "ply" << endl;
-    cout << "format ascii 1.0" << endl;
-    cout << "comment Created by sleek surface builder" << endl;
-    cout << "element vertex " << vertices.size() << endl;
-    cout << "property float x" << endl;
-    cout << "property float y" << endl;
-    cout << "property float z" << endl;
-    cout << "property float nx" << endl;
-    cout << "property float ny" << endl;
-    cout << "property float nz" << endl;
-    cout << "element face " << indices.size() / verticesInTriangle << endl;
-    cout << "property list uchar uint vertex_indices" << endl;
-    cout << "end_header" << endl;
+    cout << "# Testing the sleek-surface library" << endl << endl;
+    cout << "# " << vertices.size() << " vertex positions" << endl;
     for (int i = 0, n = vertices.size(); i < n; ++i)
     {
-        // Swap axes to view in Blender.
-        cout << vertices[i].position.z << " " << vertices[i].position.x << " " << vertices[i].position.y << " "
-             << vertices[i].normal.z   << " " << vertices[i].normal.x   << " " << vertices[i].normal.y << endl;
+        cout << "v " <<
+            vertices[i].position.x << " " <<
+            vertices[i].position.y << " " <<
+            vertices[i].position.z << endl;
     }
-    for (int i = 0, n = indices.size(); i < n; i += verticesInTriangle)
+    cout << endl << "# " << vertices.size() << " vertex normals" << endl;
+    for (int i = 0, n = vertices.size(); i < n; ++i)
     {
-        cout << verticesInTriangle << " " << indices[i] << " " << indices[i+1] << " " << indices[i+2] << endl;
+        cout << "vn " <<
+            vertices[i].normal.x << " " <<
+            vertices[i].normal.y << " " <<
+            vertices[i].normal.z << endl;
+    }
+    cout << endl << "# Mesh with " << indices.size() / 3 << " faces" << endl;
+    cout << "o sleek-surface" << endl;
+    for (int i = 0, n = indices.size(); i < n; i += 3)
+    {
+        cout << "f " <<
+            indices[i] + 1 << "//" << indices[i] + 1 << " " <<
+            indices[i + 1] + 1 << "//" << indices[i + 1] + 1 << " " <<
+            indices[i + 2] + 1 << "//" << indices[i + 2] + 1 << endl;
     }
 }
 
@@ -72,6 +74,9 @@ int main(int argc, char **argv)
         { 1.157, 1.654, 1.165, 1.300, 1.136, 1.168, 1.654 },
         { 1.215, 1.658, 1.184, 1.156, 1.163, 1.185, 1.658 }
     };
+    const double c = 2.0;
+    const int resolution = 17;
+    const int kernelRadius = 17 / 5;
 
     vector<Vec3> points(w * h);
     for (int z = 0; z < h; ++z)
@@ -81,20 +86,18 @@ int main(int argc, char **argv)
     }
 
     vector<Vertex> vertices;
+    vector<int> indices;
+    vector<float> gaussianKernel;
+    vector<Vertex> smoothedVertices;
     int rw, rh;
 
-    SurfaceBuilder::build(points, w, h, 17, 2.0, vertices, rw, rh);
-
-    vector<int> indices;
+    SurfaceBuilder::build(points, w, h, resolution, c, vertices, rw, rh);
     SurfaceBuilder::triangulateGrid(rw, rh, indices);
     SurfaceBuilder::computeNormals(vertices, indices);
-    vector<float> gaussianKernel;
-    int kernelRadius = 17 / 5;
     Math::calcGaussianKernel(kernelRadius, false, gaussianKernel);
-    vector<Vertex> smoothedVertices = vertices;
     SurfaceBuilder::smoothNormalsWithKernel(vertices, rw, rh, gaussianKernel, kernelRadius, smoothedVertices);
 
-    printPLY(smoothedVertices, indices);
+    printOBJ(smoothedVertices, indices);
 
     return 0;
 }

@@ -13,8 +13,8 @@ Written by Konstantin Ryabinin under terms of MIT license.
 
 You can compile the test application just by calling `make`.
 
-The file `main.cpp` contains the hardcoded testing dataset described in the original paper. For testing purposes, the application prints to console the surface vertex data in the [Stanford Triangle Format](http://paulbourke.net/dataformats/ply/). So, you can run it as follows:
+The file `main.cpp` contains the hardcoded testing dataset described in the original paper. For testing purposes, the application prints to console the surface vertex data in the [Wavefront OBJ format](https://en.wikipedia.org/wiki/Wavefront_.obj_file). So, you can run it as follows:
 ```
-./main > out.ply
+./main > out.obj
 ```
-After that, you can view `out.ply` in some 3D model viewer, for example, import it in [Blender](https://www.blender.org/).
+After that, you can view `out.obj` in some 3D model viewer, for example, import it in [Blender](https://www.blender.org/).
