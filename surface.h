@@ -63,6 +63,30 @@ namespace SleekSurface
          */
         static bool build(vector<Vec3> &inPoints, int inWidth, int inHeight, int resolution, double c,
                           vector<Vertex> &outPoints, int &outWidth, int &outHeight);
+        /**
+         * Build a triangle mesh from regular grid.
+         * 
+         * @param w, h - resolution of input grid.
+         * @param indices - result vector of indices.
+         */
+        static void triangulateGrid(int w, int h, vector<int> &indices);
+        /**
+         * Compute vertex normals using algorithm of smoothing groups.
+         * 
+         * @param vertices - input vertices
+         * @param indices - vector of triangle indices
+         */
+        static void computeNormals(vector<Vertex> &vertices, const vector<int> &indices);
+        /**
+         * Smooth vertex normals using gaussian kernel.
+         * 
+         * @param inVertices - regular grid of 3D points.
+         * @param width, height - resolution of input grid.
+         * @param kernel - matrix of gaussian kernel coefficients.
+         * @param radius - radius of applying kernel.
+         * @param outVertices - updated vertices with smoothed normals.
+         */
+        static void smoothNormalsWithKernel(const vector<Vertex> &inVertices, int width, int height, vector<float> kernel, int radius, vector<Vertex> &outVertices);
     };
 
     int SurfaceBuilder::index(int w, int x, int z)

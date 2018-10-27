@@ -185,3 +185,8 @@ void Math::calcGaussianKernel(int radius, bool shouldNormalize, vector<float> &k
         }
     }
 }
+
+Vec3 Math::normal(const Vec3 &a, const Vec3 &b, const Vec3 &c)
+{
+    return Vec3::cross(b - a, c - a);
+}
